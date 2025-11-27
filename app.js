@@ -12,8 +12,15 @@ const __dirname = dirname(__filename);
 const app  = express();
 const PORT = process.env.PORT ?? 3005;
 
+// ─── Ensure logs/ directory exists ─────────────────────────────────────────────
+const logsDir = path.join(__dirname, 'logs');
+if (!fs.existsSync(logsDir)) {
+  fs.mkdirSync(logsDir, { recursive: true });
+}
+
 // ─── Log File Setup ────────────────────────────────────────────────────────────
-const logFilePath = path.join(__dirname, 'main.log');
+const logFilePath = path.join(logsDir, 'main.log');
+
 // Create a write stream (in append mode 'a') for the log file
 const accessLogStream = fs.createWriteStream(logFilePath, { flags: 'a' });
 console.log(`Logs will be written to: ${logFilePath}`);
