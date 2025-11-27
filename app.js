@@ -47,7 +47,7 @@ function maybeThrow(req, res, next) {
 
 // ─── “Flaky” routes (50 % chance of failure) ───────────────────────────────────
 app.get('/random',    maybeThrow, (req, res) => res.json({ value: Math.random() }));
-app.post('/compute',  maybeThrow, (req, res) => res.json({ result: 42 }));
+app.get('/compute',  maybeThrow, (req, res) => res.json({ result: 42 }));
 
 // ─── Route that ALWAYS fails ───────────────────────────────────────────────────
 app.get('/error', (req, res, next) => next(new Error('This endpoint always bombs')));
