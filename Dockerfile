@@ -15,4 +15,4 @@ COPY app.js .
 EXPOSE 3005
 
 # Command to run the application
-CMD [ "node", "index.js" ]
+CMD [ "node", "main.js" ]
