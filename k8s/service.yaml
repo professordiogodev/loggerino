@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: loggerino-service
+  namespace: diogo
+  labels:
+    app: loggerino
+    # IMPORTANT: Add a label here that your Prometheus instance selects!
+    # Common labels are 'release: prometheus' or 'monitor: prometheus'
+    # I'll use a generic 'monitor' label for broad compatibility.
+    monitor: prometheus-app
+spec:
+  selector:
+    app: loggerino
+  ports:
+    # This port will be used by the ServiceMonitor to scrape metrics
+    - name: metrics
+      port: 3005
+      targetPort: 3005

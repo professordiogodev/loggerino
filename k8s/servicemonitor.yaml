@@ -1,0 +1,22 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: loggerino-monitor
+  namespace: diogo
+  labels:
+    # This label is often required by the Prometheus CRD's 'serviceMonitorSelector' 
+    # Check your Prometheus configuration for the required value (e.g., release: prometheus)
+    release: diogo-monitoring
+spec:
+  # This selector finds the Service(s) you want to monitor
+  selector:
+    matchLabels:
+      monitor: prometheus-app
+  # This namespace selector ensures it only looks for Services in the 'diogo' namespace
+  namespaceSelector:
+    matchNames:
+      - diogo
+  endpoints:
+  - port: metrics         # Must match the 'name' field in the Service's port definition
+    path: /metrics        # The Prometheus endpoint path from your code
+    interval: 15s         # How often to scrape (e.g., every 15 seconds)

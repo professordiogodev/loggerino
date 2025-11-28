@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loggerino-app
+  namespace: diogo
+  labels:
+    app: loggerino
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: loggerino
+  template:
+    metadata:
+      labels:
+        app: loggerino
+    spec:
+      containers:
+      - name: loggerino
+        image: pokfinner/loggerino
+        # Note: The application listens on 3005 based on the code
+        ports:
+        - name: http-metrics
+          containerPort: 3005
+        # Set PORT env var if the default 3005 wasn't used in the Dockerfile/entrypoint
+        env:
+        - name: PORT
+          value: "3005"
