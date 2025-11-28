@@ -1,0 +1,53 @@
+alloy:
+  configMap:
+    content: |-
+      logging {
+        level = "info"
+        format = "logfmt"
+      }
+
+      // 1. Discover all pods in the cluster, getting targets for scraping
+      discovery.kubernetes "pods" {
+        role = "pod"
+      }
+
+      // 1b. Filter targets: Must be in 'diogo' namespace AND pod name must match 'loggerino-*'
+      discovery.relabel "filter_pods" {
+        targets = discovery.kubernetes.pods.targets
+        rule {
+          // Rule 1: Filter by Pod Name (loggerino-*)
+          source_labels = ["__meta_kubernetes_pod_name"]
+          regex         = "loggerino-.*"
+          action        = "keep"
+        }
+        rule {
+          // Rule 2: Filter by Namespace (diogo)
+          source_labels = ["__meta_kubernetes_namespace"]
+          regex         = "diogo" 
+          action        = "keep"
+        }
+      }
+
+      // 2. Scrape container logs using the kubernetes source
+      // CRITICAL FIX: Use the output from the filter_pods component
+      loki.source.kubernetes "container_logs" {
+        targets = discovery.relabel.filter_pods.output 
+        forward_to = [loki.process.filter_logs.receiver]
+      }
+
+      // 3. Process/Filter non-essential logs
+      loki.process "filter_logs" {
+        stage.drop {
+          source = "log_line" 
+          expression  = ".*Liveness probe failed.*"
+          drop_counter_reason = "noisy_liveness"
+        }
+        forward_to = [loki.write.endpoint.receiver]
+      }
+
+      // 4. Write logs to the Loki Service
+      loki.write "endpoint" {
+        endpoint {
+          url = "http://loki-diogo:3100/loki/api/v1/push"
+        }
+      }
