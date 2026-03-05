@@ -1,7 +1,8 @@
-# LogQL Queries for Loggerino
+# LogQL Queries for Loggerino (Kubernetes)
 
 A beginner-friendly cheat sheet of LogQL queries you can paste straight into
-**Grafana → Explore → Loki** to query logs from the loggerino app.
+**Grafana → Explore → Loki** to query logs from the loggerino app running in
+Kubernetes (collected by Alloy).
 
 ---
 
