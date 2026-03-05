@@ -1,0 +1,45 @@
+// Component 1: Finds the file targets on the filesystem
+// We replace /var/log/*.log with the specific log file path
+
+local.file_match "express_log_matcher" {
+  // Use the specific file path from our Express app lab setup
+  path_targets = [{__path__ = "/app/*.log"}]
+  sync_period = "5s"
+}
+
+// Component 2: Reads the logs from the matched file targets
+loki.source.file "log_scrape" {
+  // Pulls the targets (i.e., "/app/main.log") from the matcher component
+  targets = local.file_match.express_log_matcher.targets
+  
+  // Forward the scraped logs to the processor component
+  forward_to = [loki.process.filter_logs.receiver] 
+  
+  tail_from_end = true
+}
+
+// Component 3: Processes the logs (e.g., drops unwanted lines)
+loki.process "filter_logs" {
+  stage.drop {
+    source = ""
+    expression  = ".*Connection closed by authenticating user root" 
+    drop_counter_reason = "noisy"
+  }
+  
+  // Forward the processed logs to the writer component
+  forward_to = [loki.write.grafana_loki.receiver]
+}
+
+// Component 4: Writes logs to Loki
+loki.write "grafana_loki" {
+  // Use the internal Docker network name for Loki
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+  
+  // Add required labels to the output stream
+  external_labels = {
+    app = "loggerino",
+    env = "dev",
+  }
+}
